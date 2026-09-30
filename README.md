@@ -65,3 +65,7 @@ swift build
 | `--key` / `--shadow` | キーウィンドウにしてから撮る／ウィンドウの影も含めて撮る |
 
 アニメーションの速さは `Sources/DropShelf/Views/ShelfView.swift` の `ShelfMotion` にまとめています。
+
+## ライセンス
+
+[MIT License](LICENSE)
