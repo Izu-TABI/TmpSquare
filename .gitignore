@@ -2,3 +2,10 @@
 .swiftpm/
 build/
 .DS_Store
+
+# 環境変数・鍵・証明書などの秘密情報
+.env
+.env.*
+*.pem
+*.p12
+*.key

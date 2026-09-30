@@ -5,6 +5,7 @@
 #   ./scripts/build.sh            build/DropShelf.app を作る
 #   ./scripts/build.sh --run      ビルドして起動する
 #   ./scripts/build.sh --install  /Applications にインストールして起動する
+#   ./scripts/build.sh --universal  Apple シリコンと Intel の両方で動く版を作る（配布用）
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -13,10 +14,12 @@ APP="build/$APP_NAME.app"
 
 INSTALL=false
 RUN=false
+UNIVERSAL=false
 for arg in "$@"; do
   case "$arg" in
     --install) INSTALL=true; RUN=true ;;
     --run) RUN=true ;;
+    --universal) UNIVERSAL=true ;;
     *) echo "不明なオプション: $arg" >&2; exit 1 ;;
   esac
 done
@@ -26,14 +29,26 @@ if [[ ! -f Resources/AppIcon.icns ]]; then
   swift scripts/make-icon.swift Resources/AppIcon.icns
 fi
 
-echo "▸ コンパイル (release)"
-swift build -c release
-BIN_DIR="$(swift build -c release --show-bin-path)"
-
-echo "▸ $APP を組み立て"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$BIN_DIR/$APP_NAME" "$APP/Contents/MacOS/$APP_NAME"
+
+if $UNIVERSAL; then
+  # Xcode なしでも作れるよう、アーキテクチャごとにビルドして lipo でまとめる
+  BINARIES=()
+  for ARCH in arm64 x86_64; do
+    echo "▸ コンパイル (release, $ARCH)"
+    TRIPLE="$ARCH-apple-macosx14.0"
+    swift build -c release --triple "$TRIPLE"
+    BINARIES+=("$(swift build -c release --triple "$TRIPLE" --show-bin-path)/$APP_NAME")
+  done
+  lipo -create -output "$APP/Contents/MacOS/$APP_NAME" "${BINARIES[@]}"
+else
+  echo "▸ コンパイル (release)"
+  swift build -c release
+  cp "$(swift build -c release --show-bin-path)/$APP_NAME" "$APP/Contents/MacOS/$APP_NAME"
+fi
+
+echo "▸ $APP を組み立て"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 

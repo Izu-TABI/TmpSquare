@@ -2,17 +2,37 @@
 
 Dropover のような、ファイルを一時的に置いておける「シェルフ」を出す macOS のメニューバーアプリです。
 
-## 必要なもの
+## ダウンロード
+
+**[DropShelf.zip をダウンロード](https://github.com/Izu-TABI/DropShelf/releases/latest/download/DropShelf.zip)**（macOS 14 以降、Apple シリコン / Intel）
+
+1. zip を開き、`DropShelf.app` を「アプリケーション」フォルダに移動します。
+2. `DropShelf.app` を開きます。Apple の公証を受けていないため、初回は「開いていません」という警告が出るので「完了」を押します。
+3. 「システム設定」→「プライバシーとセキュリティ」を開き、下の方にある DropShelf の「このまま開く」を押します。もう一度確認が出たら「このまま開く」を押します。
+
+メニューバーにトレイのアイコンが出たら準備完了です。過去のバージョンは [Releases](https://github.com/Izu-TABI/DropShelf/releases) にあります。
+
+## ソースからビルドする
+
+### 必要なもの
 
 - macOS 14 以降（macOS 26 では Liquid Glass で表示）
 - Xcode の Command Line Tools（Xcode 本体は不要）
 
-## ビルドと起動
+### ビルドと起動
 
 ```bash
 ./scripts/build.sh --run       # build/DropShelf.app を作って起動
 ./scripts/build.sh --install   # /Applications にインストールして起動
 ./scripts/test.sh              # テストを実行
+```
+
+### リリースを出す
+
+`Resources/Info.plist` の `CFBundleShortVersionString` を上げてコミット・push してから実行します。Apple シリコンと Intel の両方で動く版を作り、`DropShelf.zip` を添付した `v<バージョン>` のリリースを GitHub に公開します。
+
+```bash
+./scripts/release.sh
 ```
 
 ## 使い方
@@ -43,7 +63,7 @@ Sources/DropShelf/
 ├── Views/      SwiftUI の見た目と、AppKit で処理するドラッグアウト
 └── Support/    一時領域、ZIP 作成、メニュー項目のヘルパー
 Tests/DropShelfTests/   シェイク判定・シェルフの位置・取り込み・ドロップ受付・ZIP のテスト
-scripts/        ビルド、テスト、アイコン生成
+scripts/        ビルド、テスト、リリース、アイコン生成
 ```
 
 ## 開発用オプション（デバッグビルドのみ）
