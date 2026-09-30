@@ -1,16 +1,16 @@
-# DropShelf
+# TmpSquare
 
 Dropover のような、ファイルを一時的に置いておける「シェルフ」を出す macOS のメニューバーアプリです。
 
 ## ダウンロード
 
-**[DropShelf.zip をダウンロード](https://github.com/Izu-TABI/DropShelf/releases/latest/download/DropShelf.zip)**（macOS 14 以降、Apple シリコン / Intel）
+**[TmpSquare.zip をダウンロード](https://github.com/Izu-TABI/TmpSquare/releases/latest/download/TmpSquare.zip)**（macOS 14 以降、Apple シリコン / Intel）
 
-1. zip を開き、`DropShelf.app` を「アプリケーション」フォルダに移動します。
-2. `DropShelf.app` を開きます。Apple の公証を受けていないため、初回は「開いていません」という警告が出るので「完了」を押します。
-3. 「システム設定」→「プライバシーとセキュリティ」を開き、下の方にある DropShelf の「このまま開く」を押します。もう一度確認が出たら「このまま開く」を押します。
+1. zip を開き、`TmpSquare.app` を「アプリケーション」フォルダに移動します。
+2. `TmpSquare.app` を開きます。Apple の公証を受けていないため、初回は「開いていません」という警告が出るので「完了」を押します。
+3. 「システム設定」→「プライバシーとセキュリティ」を開き、下の方にある TmpSquare の「このまま開く」を押します。もう一度確認が出たら「このまま開く」を押します。
 
-メニューバーにトレイのアイコンが出たら準備完了です。過去のバージョンは [Releases](https://github.com/Izu-TABI/DropShelf/releases) にあります。
+メニューバーに点線の四角のアイコンが出たら準備完了です。過去のバージョンは [Releases](https://github.com/Izu-TABI/TmpSquare/releases) にあります。
 
 ## ソースからビルドする
 
@@ -22,14 +22,14 @@ Dropover のような、ファイルを一時的に置いておける「シェ�
 ### ビルドと起動
 
 ```bash
-./scripts/build.sh --run       # build/DropShelf.app を作って起動
+./scripts/build.sh --run       # build/TmpSquare.app を作って起動
 ./scripts/build.sh --install   # /Applications にインストールして起動
 ./scripts/test.sh              # テストを実行
 ```
 
 ### リリースを出す
 
-`Resources/Info.plist` の `CFBundleShortVersionString` を上げてコミット・push してから実行します。Apple シリコンと Intel の両方で動く版を作り、`DropShelf.zip` を添付した `v<バージョン>` のリリースを GitHub に公開します。
+`Resources/Info.plist` の `CFBundleShortVersionString` を上げてコミット・push してから実行します。Apple シリコンと Intel の両方で動く版を作り、`TmpSquare.zip` を添付した `v<バージョン>` のリリースを GitHub に公開します。
 
 ```bash
 ./scripts/release.sh
@@ -50,19 +50,19 @@ Dropover のような、ファイルを一時的に置いておける「シェ�
 
 - 取り出し先が Finder の場合は Finder と同じ動作になります（同じディスクなら移動、⌥ を押しながらでコピー）。
 - 取り出した項目はシェルフから外れ、空になったシェルフは自動で閉じます（メニューで変更できます）。
-- ドロップされた画像データ・添付ファイル・ZIP は `~/Library/Caches/com.odentabetai.DropShelf/Items` に保存され、次回起動時に削除されます。
+- ドロップされた画像データ・添付ファイル・ZIP は `~/Library/Caches/com.odentabetai.TmpSquare/Items` に保存され、次回起動時に削除されます。
 - シェイクの有効／無効と感度、ログイン時の起動はメニューバーから設定できます。
 
 ## 構成
 
 ```
-Sources/DropShelf/
+Sources/TmpSquare/
 ├── App/        起動処理、メニューバー、設定、グローバルホットキー
 ├── Shake/      ドラッグ中のシェイク検出
 ├── Shelf/      シェルフのウィンドウ・状態・ドロップの取り込み・アクション
 ├── Views/      SwiftUI の見た目と、AppKit で処理するドラッグアウト
 └── Support/    一時領域、ZIP 作成、メニュー項目のヘルパー
-Tests/DropShelfTests/   シェイク判定・シェルフの位置・取り込み・ドロップ受付・ZIP のテスト
+Tests/TmpSquareTests/   シェイク判定・シェルフの位置・取り込み・ドロップ受付・ZIP のテスト
 scripts/        ビルド、テスト、リリース、アイコン生成
 ```
 
@@ -70,7 +70,7 @@ scripts/        ビルド、テスト、リリース、アイコン生成
 
 ```bash
 swift build
-.build/debug/DropShelf --open-shelf --expanded ~/Desktop/a.pdf ~/Desktop/b.png
+.build/debug/TmpSquare --open-shelf --expanded ~/Desktop/a.pdf ~/Desktop/b.png
 ```
 
 `--open-shelf` で項目入りのシェルフを画面中央に開きます。画面収録の権限がなくても、自分のウィンドウを PNG に書き出して UI を確認できます。
@@ -84,7 +84,7 @@ swift build
 | `--dark` / `--light` | 外観を固定する |
 | `--key` / `--shadow` | キーウィンドウにしてから撮る／ウィンドウの影も含めて撮る |
 
-アニメーションの速さは `Sources/DropShelf/Views/ShelfView.swift` の `ShelfMotion` にまとめています。
+アニメーションの速さは `Sources/TmpSquare/Views/ShelfView.swift` の `ShelfMotion` にまとめています。
 
 ## ライセンス
 

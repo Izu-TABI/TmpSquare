@@ -5,12 +5,12 @@
 #   ./scripts/release.sh
 #
 # Resources/Info.plist の CFBundleShortVersionString を v<バージョン> のタグにして、
-# ユニバーサル版の DropShelf.zip を添付したリリースを作る。
+# ユニバーサル版の TmpSquare.zip を添付したリリースを作る。
 # 新しいバージョンを出すときは、先に Info.plist のバージョンを上げてコミット・push しておく。
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-APP_NAME="DropShelf"
+APP_NAME="TmpSquare"
 VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
 TAG="v$VERSION"
 ZIP="build/$APP_NAME.zip"

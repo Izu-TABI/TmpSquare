@@ -12,7 +12,7 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         self.onSettingsChanged = onSettingsChanged
         super.init()
 
-        statusItem.button?.image = NSImage(systemSymbolName: "tray.and.arrow.down", accessibilityDescription: "DropShelf")
+        statusItem.button?.image = StatusIcon.make()
 
         let menu = NSMenu()
         menu.autoenablesItems = false
@@ -68,11 +68,11 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
 
         menu.addItem(.separator())
 
-        menu.addItem(ClosureMenuItem("DropShelf について") {
+        menu.addItem(ClosureMenuItem("TmpSquare について") {
             NSApp.activate()
             NSApp.orderFrontStandardAboutPanel(nil)
         })
-        let quit = NSMenuItem(title: "DropShelf を終了", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        let quit = NSMenuItem(title: "TmpSquare を終了", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         quit.target = NSApp
         menu.addItem(quit)
     }

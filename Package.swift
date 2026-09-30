@@ -2,17 +2,17 @@
 import PackageDescription
 
 let package = Package(
-    name: "DropShelf",
+    name: "TmpSquare",
     platforms: [.macOS(.v14)],
     targets: [
         .executableTarget(
-            name: "DropShelf",
-            path: "Sources/DropShelf"
+            name: "TmpSquare",
+            path: "Sources/TmpSquare"
         ),
         .testTarget(
-            name: "DropShelfTests",
-            dependencies: ["DropShelf"],
-            path: "Tests/DropShelfTests"
+            name: "TmpSquareTests",
+            dependencies: ["TmpSquare"],
+            path: "Tests/TmpSquareTests"
         ),
     ]
 )

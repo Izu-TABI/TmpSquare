@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import DropShelf
+@testable import TmpSquare
 
 struct ShakeDetectorTests {
     /// 60Hz でサンプリングした X 座標列を与え、検出したときのカーソル位置と往復の中心を返す

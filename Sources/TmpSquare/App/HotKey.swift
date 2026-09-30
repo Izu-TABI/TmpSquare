@@ -19,7 +19,7 @@ final class HotKey {
         }, 1, &eventType, userData, &handlerRef)
         guard installStatus == noErr else { return nil }
 
-        let hotKeyID = EventHotKeyID(signature: OSType(0x4453_4C46), id: 1) // 'DSLF'
+        let hotKeyID = EventHotKeyID(signature: OSType(0x544D_5053), id: 1) // 'TMPS'
         let registerStatus = RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetApplicationEventTarget(), 0, &hotKeyRef)
         guard registerStatus == noErr else {
             RemoveEventHandler(handlerRef)

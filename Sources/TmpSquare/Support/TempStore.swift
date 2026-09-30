@@ -5,7 +5,7 @@ enum TempStore {
     static let root: URL = {
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         return caches
-            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "DropShelf", isDirectory: true)
+            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "TmpSquare", isDirectory: true)
             .appendingPathComponent("Items", isDirectory: true)
     }()
 

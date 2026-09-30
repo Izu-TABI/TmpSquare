@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import DropShelf
+@testable import TmpSquare
 
 struct ArchiverTests {
     @Test func multipleItemsAreZippedAtTheArchiveRoot() async throws {

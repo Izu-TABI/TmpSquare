@@ -3,7 +3,7 @@ import AppKit
 
 /// 開発用の起動オプション（画面収録の権限なしで UI を確認するため）
 ///
-///     DropShelf --open-shelf [--expanded] [--dark | --light] [--key] [--shadow] [--drop-later]
+///     TmpSquare --open-shelf [--expanded] [--dark | --light] [--key] [--shadow] [--drop-later]
 ///               [--snapshot <out.png>] [--filmstrip <out.png>] <path>...
 ///
 /// 項目入りのシェルフを画面中央に開き、少し待ってからシェルフのウィンドウを PNG に書き出す。

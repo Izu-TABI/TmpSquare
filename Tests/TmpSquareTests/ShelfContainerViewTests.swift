@@ -1,6 +1,6 @@
 import AppKit
 import Testing
-@testable import DropShelf
+@testable import TmpSquare
 
 @MainActor
 struct ShelfContainerViewTests {

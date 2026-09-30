@@ -2,7 +2,7 @@ import AppKit
 
 @main
 @MainActor
-enum DropShelfApp {
+enum TmpSquareApp {
     static func main() {
         let app = NSApplication.shared
         let delegate = AppDelegate()

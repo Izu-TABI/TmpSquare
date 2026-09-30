@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# DropShelf.app をビルドする
+# TmpSquare.app をビルドする
 #
 # 使い方:
-#   ./scripts/build.sh            build/DropShelf.app を作る
+#   ./scripts/build.sh            build/TmpSquare.app を作る
 #   ./scripts/build.sh --run      ビルドして起動する
 #   ./scripts/build.sh --install  /Applications にインストールして起動する
 #   ./scripts/build.sh --universal  Apple シリコンと Intel の両方で動く版を作る（配布用）
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-APP_NAME="DropShelf"
+APP_NAME="TmpSquare"
 APP="build/$APP_NAME.app"
 
 INSTALL=false
