@@ -4,11 +4,12 @@ import AppKit
 /// 開発用の起動オプション（画面収録の権限なしで UI を確認するため）
 ///
 ///     TmpSquare --open-shelf [--expanded] [--dark | --light] [--key] [--shadow] [--drop-later]
-///               [--snapshot <out.png>] [--filmstrip <out.png>] <path>...
+///               [--snapshot <out.png>] [--filmstrip <out.png>] [--record <dir>] <path>...
 ///
 /// 項目入りのシェルフを画面中央に開き、少し待ってからシェルフのウィンドウを PNG に書き出す。
 /// - `--snapshot`: 現在の見た目を書き出す
 /// - `--filmstrip`: 一覧表示と重ね表示を切り替え、その間のコマを並べて書き出す（アニメーション確認用）
+/// - `--record`: 空のシェルフから順に操作し、各場面のコマを <dir> に書き出して終了する（README の動作イメージ用）
 /// - `--drop-later`: 空のシェルフで開き、`--filmstrip` のときに項目を追加する（ドロップ時の動き）
 /// - `--key`: シェルフをキーウィンドウにしてから撮る（クリック・ドラッグ中の見た目）
 /// - `--shadow`: ウィンドウの影も含めて撮る
@@ -20,6 +21,7 @@ enum DebugSupport {
 
         let snapshotURL = takeValue(of: "--snapshot", from: &arguments).map { URL(fileURLWithPath: $0) }
         let filmstripURL = takeValue(of: "--filmstrip", from: &arguments).map { URL(fileURLWithPath: $0) }
+        let recordURL = takeValue(of: "--record", from: &arguments).map { URL(fileURLWithPath: $0, isDirectory: true) }
         let includeShadow = arguments.contains("--shadow")
         if arguments.contains("--dark") {
             NSApp.appearance = NSAppearance(named: .darkAqua)
@@ -28,7 +30,7 @@ enum DebugSupport {
         }
 
         let items = arguments.filter { !$0.hasPrefix("--") }.map { ShelfItem(file: URL(fileURLWithPath: $0)) }
-        let dropLater = arguments.contains("--drop-later")
+        let dropLater = arguments.contains("--drop-later") || recordURL != nil
         let shelf = shelves.openShelf(at: NSPoint(x: screen.visibleFrame.midX, y: screen.visibleFrame.midY))
         if !dropLater {
             shelf.model.add(items)
@@ -51,6 +53,73 @@ enum DebugSupport {
                     }
                 }
             }
+            if let recordURL {
+                SceneRecorder(shelf: shelf, items: items, directory: recordURL).start()
+            }
+        }
+    }
+
+    /// 空のシェルフから「ドロップ先として強調 → ドロップ → 一覧表示 → 重ね表示」と順に操作し、
+    /// 各場面のコマを <dir>/<場面>-<番号>.png に 30fps で書き出す。終わったらアプリを終了する
+    @MainActor
+    private final class SceneRecorder {
+        private struct Scene {
+            let name: String
+            let duration: TimeInterval
+            let action: () -> Void
+        }
+
+        private let panel: NSWindow
+        private let directory: URL
+        private var scenes: [Scene]
+        private var frames: [CGImage] = []
+
+        init(shelf: ShelfController, items: [ShelfItem], directory: URL) {
+            let model = shelf.model
+            panel = shelf.panel
+            self.directory = directory
+            scenes = [
+                Scene(name: "empty", duration: 0) {},
+                Scene(name: "target", duration: 0.3) { model.isDropTargeted = true },
+                Scene(name: "drop", duration: 0.5) {
+                    model.isDropTargeted = false
+                    model.add(items)
+                },
+                Scene(name: "expand", duration: 0.5) { model.isExpanded = true },
+                Scene(name: "collapse", duration: 0.5) { model.isExpanded = false },
+            ]
+        }
+
+        func start() {
+            try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            recordNextScene()
+        }
+
+        private func recordNextScene() {
+            guard !scenes.isEmpty else {
+                NSApp.terminate(nil)
+                return
+            }
+            let scene = scenes.removeFirst()
+            scene.action()
+            frames = []
+
+            let start = ProcessInfo.processInfo.systemUptime
+            let timer = Timer(timeInterval: 1.0 / 30.0, repeats: true) { [self] timer in
+                MainActor.assumeIsolated {
+                    if let image = captureWindow(panel, includeShadow: false) {
+                        frames.append(image)
+                    }
+                    guard ProcessInfo.processInfo.systemUptime - start >= scene.duration else { return }
+                    timer.invalidate()
+                    for (index, frame) in frames.enumerated() {
+                        let url = directory.appendingPathComponent(String(format: "%@-%02d.png", scene.name, index))
+                        try? NSBitmapImageRep(cgImage: frame).representation(using: .png, properties: [:])?.write(to: url)
+                    }
+                    recordNextScene()
+                }
+            }
+            RunLoop.main.add(timer, forMode: .common)
         }
     }
 
