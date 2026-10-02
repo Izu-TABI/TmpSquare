@@ -51,6 +51,7 @@ fi
 echo "▸ $APP を組み立て"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+cp -R Resources/*.lproj "$APP/Contents/Resources/"
 
 echo "▸ 署名 (ad-hoc)"
 codesign --force --sign - "$APP"

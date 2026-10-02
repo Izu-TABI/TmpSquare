@@ -5,14 +5,21 @@ import Carbon.HIToolbox
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let shelves = ShelfManager()
     private let shakeMonitor = DragShakeMonitor()
+    private let welcome = WelcomeWindowController()
     private var statusMenu: StatusMenuController?
     private var hotKey: HotKey?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         TempStore.purge()
 
-        statusMenu = StatusMenuController(shelves: shelves) { [weak self] in
-            self?.applySettings()
+        statusMenu = StatusMenuController(
+            shelves: shelves,
+            onSettingsChanged: { [weak self] in self?.applySettings() },
+            onShowGuide: { [weak self] in self?.welcome.show() }
+        )
+        welcome.onOpenShelf = { [weak self] in
+            guard let screen = NSScreen.main else { return }
+            self?.shelves.openShelf(at: NSPoint(x: screen.visibleFrame.midX, y: screen.visibleFrame.midY))
         }
 
         shakeMonitor.onShake = { [weak self] location in
@@ -27,8 +34,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         applySettings()
 
         #if DEBUG
-        DebugSupport.openShelfIfRequested(using: shelves)
+        if DebugSupport.handleLaunchOptions(shelves: shelves, welcome: welcome) { return }
         #endif
+        // メニューバーにしか出ないので、初めての起動では使い方を案内する
+        welcome.showIfFirstLaunch()
     }
 
     /// 起動中に Finder などからもう一度アプリを開いたら、シェルフを 1 つ開く

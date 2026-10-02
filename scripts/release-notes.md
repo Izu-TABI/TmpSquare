@@ -5,12 +5,12 @@
 3. 「システム設定」→「プライバシーとセキュリティ」を開き、下の方にある TmpSquare の「このまま開く」を押します。
 4. もう一度確認が出たら「このまま開く」を押します。
 
-メニューバーに点線の四角のアイコンが出たら準備完了です。ファイルをドラッグしながらカーソルを左右に振るとシェルフが開きます（⌥⇧Space でも開けます）。
+使い方の案内が開いたら準備完了です。ファイルをドラッグしながらカーソルを左右に振るとシェルフが開きます（⌥⇧Space でも開けます）。表示は Mac の言語設定に合わせて日本語か英語になります。
 
-ターミナルが使える場合は、手順 2〜4 の代わりに次のコマンドでも開けるようになります。
+Homebrew でも入れられます（初回の「このまま開く」は同じく必要です）。
 
 ```
-xattr -dr com.apple.quarantine /Applications/TmpSquare.app
+brew install --cask izu-tabi/tap/tmpsquare
 ```
 
 **動作環境**: macOS 14 以降（Apple シリコン / Intel）
@@ -24,12 +24,12 @@ xattr -dr com.apple.quarantine /Applications/TmpSquare.app
 3. Open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to TmpSquare.
 4. Confirm with **Open Anyway** again.
 
-You're all set when a dashed-square icon appears in the menu bar. Shake the cursor left and right while dragging files to open a shelf (or press ⌥⇧Space). The app's interface is currently in Japanese only.
+You're all set when the guide opens. Shake the cursor left and right while dragging files to open a shelf (or press ⌥⇧Space). The app appears in English or Japanese depending on your Mac's language settings.
 
-If you're comfortable with Terminal, you can run this instead of steps 2–4:
+You can also install it with Homebrew (you'll still need to click **Open Anyway** the first time):
 
 ```
-xattr -dr com.apple.quarantine /Applications/TmpSquare.app
+brew install --cask izu-tabi/tap/tmpsquare
 ```
 
 **Requirements**: macOS 14 or later (Apple silicon / Intel)

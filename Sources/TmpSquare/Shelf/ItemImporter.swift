@@ -80,7 +80,7 @@ enum ItemImporter {
 
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH.mm.ss"
-        let url = directory.appendingPathComponent("画像 \(formatter.string(from: Date())).png")
+        let url = directory.appendingPathComponent("\(L("画像")) \(formatter.string(from: Date())).png")
         do {
             try png.write(to: url)
             return url

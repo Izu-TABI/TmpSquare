@@ -6,9 +6,9 @@ enum ShakeSensitivity: Int, CaseIterable {
 
     var title: String {
         switch self {
-        case .low: "弱い"
-        case .medium: "標準"
-        case .high: "強い"
+        case .low: L("弱い")
+        case .medium: L("標準")
+        case .high: L("強い")
         }
     }
 }
@@ -66,6 +66,10 @@ enum LoginItem {
             }
         } catch {
             presentError(error)
+        }
+        // 初めて登録したときなど、システム設定で許可が必要な場合はその画面を開く
+        if SMAppService.mainApp.status == .requiresApproval {
+            SMAppService.openSystemSettingsLoginItems()
         }
     }
 }

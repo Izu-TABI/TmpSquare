@@ -13,11 +13,33 @@ import AppKit
 /// - `--drop-later`: 空のシェルフで開き、`--filmstrip` のときに項目を追加する（ドロップ時の動き）
 /// - `--key`: シェルフをキーウィンドウにしてから撮る（クリック・ドラッグ中の見た目）
 /// - `--shadow`: ウィンドウの影も含めて撮る
+///
+///     TmpSquare --welcome <out.png>
+///
+/// 使い方の案内を開いて PNG に書き出し、終了する。
 @MainActor
 enum DebugSupport {
-    static func openShelfIfRequested(using shelves: ShelfManager) {
+    /// 開発用の起動オプションを処理する。処理したら true（初回の案内は出さない）
+    static func handleLaunchOptions(shelves: ShelfManager, welcome: WelcomeWindowController) -> Bool {
         var arguments = Array(CommandLine.arguments.dropFirst())
-        guard arguments.contains("--open-shelf"), let screen = NSScreen.main else { return }
+        if let welcomeURL = takeValue(of: "--welcome", from: &arguments).map({ URL(fileURLWithPath: $0) }) {
+            welcome.show()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                if let window = welcome.window, let image = captureWindow(window, includeShadow: false) {
+                    writeGrid([image], columns: 1, to: welcomeURL)
+                }
+                NSApp.terminate(nil)
+            }
+            return true
+        }
+        guard arguments.contains("--open-shelf") else { return false }
+        openShelf(using: shelves, arguments: arguments)
+        return true
+    }
+
+    private static func openShelf(using shelves: ShelfManager, arguments: [String]) {
+        var arguments = arguments
+        guard let screen = NSScreen.main else { return }
 
         let snapshotURL = takeValue(of: "--snapshot", from: &arguments).map { URL(fileURLWithPath: $0) }
         let filmstripURL = takeValue(of: "--filmstrip", from: &arguments).map { URL(fileURLWithPath: $0) }
@@ -29,7 +51,7 @@ enum DebugSupport {
             NSApp.appearance = NSAppearance(named: .aqua)
         }
 
-        let items = arguments.filter { !$0.hasPrefix("--") }.map { ShelfItem(file: URL(fileURLWithPath: $0)) }
+        let items = filePaths(in: arguments).map { ShelfItem(file: URL(fileURLWithPath: $0)) }
         let dropLater = arguments.contains("--drop-later") || recordURL != nil
         let shelf = shelves.openShelf(at: NSPoint(x: screen.visibleFrame.midX, y: screen.visibleFrame.midY))
         if !dropLater {
@@ -123,6 +145,25 @@ enum DebugSupport {
         }
     }
 
+    /// オプション以外の引数（シェルフに置くファイル）。`-AppleLanguages "(en)"` のような
+    /// 標準の起動引数は値とセットで読み飛ばす
+    private static func filePaths(in arguments: [String]) -> [String] {
+        var paths: [String] = []
+        var index = 0
+        while index < arguments.count {
+            let argument = arguments[index]
+            if argument.hasPrefix("--") {
+                index += 1
+            } else if argument.hasPrefix("-") {
+                index += 2
+            } else {
+                paths.append(argument)
+                index += 1
+            }
+        }
+        return paths
+    }
+
     private static func takeValue(of option: String, from arguments: inout [String]) -> String? {
         guard let index = arguments.firstIndex(of: option), index + 1 < arguments.count else { return nil }
         let value = arguments[index + 1]
@@ -190,6 +231,7 @@ enum DebugSupport {
     /// 自分のウィンドウを WindowServer から取得する
     /// （CGWindowListCreateImage は SDK 上は使用不可だが実行時には存在するので動的に呼ぶ）
     private static func captureWindow(_ window: NSWindow, includeShadow: Bool) -> CGImage? {
+        guard window.windowNumber > 0 else { return nil }
         typealias CreateImage = @convention(c) (CGRect, UInt32, CGWindowID, UInt32) -> Unmanaged<CGImage>?
         guard let symbol = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "CGWindowListCreateImage") else { return nil }
         let createImage = unsafeBitCast(symbol, to: CreateImage.self)

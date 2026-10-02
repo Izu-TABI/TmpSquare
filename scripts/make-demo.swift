@@ -2,9 +2,11 @@
 //
 //   swift scripts/make-demo.swift samples <dir>
 //       デモ用のサンプルファイル（写真・PDF・テキスト・フォルダ）を作る
-//   swift scripts/make-demo.swift compose <frames> <samples> <out>
+//   swift scripts/make-demo.swift compose <frames> <samples> <out> [<suffix>]
 //       アプリで実際にコマ撮りしたシェルフ（<frames>）に、カーソルやドラッグ中のファイルを描き足して
-//       <out>/demo.gif と <out>/screenshots.png を作る
+//       <out>/demo<suffix>.gif と <out>/screenshots<suffix>.png を作る（英語版は suffix に -en）
+//   swift scripts/make-demo.swift social <frames> <samples> <icon.png> <out.png>
+//       SNS などでリンクを共有したときに出る画像（1280×640）を作る
 import AppKit
 import ImageIO
 import UniformTypeIdentifiers
@@ -194,15 +196,73 @@ func drawFolder(_ icon: NSImage, center: NSPoint, highlighted: Bool) {
 
 let background = color(0xDDE7F3)
 
-func compose(frames framesDirectory: URL, samples: URL, output: URL) throws {
+/// ドラッグ中に表示するサムネイル（写真は画像そのもの、ほかはファイルのアイコン）
+func dragThumbnails(samples: URL) -> [NSImage] {
+    ["Photo.png", "Report.pdf", "Notes.txt", "Assets"].map { name in
+        let url = samples.appendingPathComponent(name)
+        return NSImage(contentsOf: url).flatMap { name.hasSuffix(".png") ? $0 : nil } ?? NSWorkspace.shared.icon(forFile: url.path)
+    }
+}
+
+/// SNS などでリンクを共有したときに出る画像（GitHub の推奨は 1280×640）
+func makeSocialPreview(frames framesDirectory: URL, samples: URL, icon iconURL: URL, output: URL) throws {
+    let scenes = try Scenes(directory: framesDirectory)
+    let icon = NSImage(contentsOf: iconURL)!
+    let rep = drawBitmap(width: 1280, height: 640) {
+        let full = NSRect(x: 0, y: 0, width: 1280, height: 640)
+        NSGradient(starting: color(0x2FC4C0), ending: color(0x2C55E0))!.draw(in: full, angle: -35)
+
+        icon.draw(in: NSRect(x: 72, y: 84, width: 168, height: 168), from: .zero, operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil)
+
+        let shadow = NSShadow()
+        shadow.shadowColor = NSColor.black.withAlphaComponent(0.18)
+        shadow.shadowBlurRadius = 8
+        shadow.shadowOffset = NSSize(width: 0, height: -2)
+        func text(_ string: String, size: CGFloat, weight: NSFont.Weight, alpha: CGFloat, y: CGFloat) {
+            (string as NSString).draw(at: NSPoint(x: 86, y: y), withAttributes: [
+                .font: NSFont.systemFont(ofSize: size, weight: weight),
+                .foregroundColor: NSColor.white.withAlphaComponent(alpha),
+                .shadow: shadow,
+            ])
+        }
+        text("TmpSquare", size: 92, weight: .heavy, alpha: 1, y: 270)
+        text("振れば出てくる、ファイルの一時置き場。", size: 32, weight: .bold, alpha: 1, y: 398)
+        text("Shake to open a temporary spot for your files.", size: 22, weight: .semibold, alpha: 0.95, y: 452)
+        text("macOS ・ 無料 ・ オープンソース  /  Free & open source", size: 19, weight: .medium, alpha: 0.8, y: 526)
+
+        // 実際のシェルフ（一覧表示を奥、重ね表示を手前）と、ドラッグしてくるファイル
+        let scale: CGFloat = 1.3
+        func shelf(_ image: NSImage, center: NSPoint) {
+            let size = NSSize(width: image.size.width * scale, height: image.size.height * scale)
+            NSGraphicsContext.saveGraphicsState()
+            let shelfShadow = NSShadow()
+            shelfShadow.shadowColor = NSColor.black.withAlphaComponent(0.35)
+            shelfShadow.shadowBlurRadius = 30
+            shelfShadow.shadowOffset = NSSize(width: 0, height: -12)
+            shelfShadow.set()
+            image.draw(
+                in: NSRect(x: center.x - size.width / 2, y: center.y - size.height / 2, width: size.width, height: size.height),
+                from: .zero, operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil
+            )
+            NSGraphicsContext.restoreGraphicsState()
+        }
+        shelf(scenes.frame("expand"), center: NSPoint(x: 1070, y: 268))
+        shelf(scenes.frame("drop"), center: NSPoint(x: 850, y: 372))
+
+        let cursor = NSPoint(x: 1010, y: 470)
+        drawDraggedItems(dragThumbnails(samples: samples), at: cursor)
+        drawCursor(at: cursor, pressed: true)
+    }
+    try writePNG(rep, to: output)
+    print("✓ \(output.path)")
+}
+
+func compose(frames framesDirectory: URL, samples: URL, output: URL, suffix: String) throws {
     let scenes = try Scenes(directory: framesDirectory)
     try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
 
     let folderIcon = NSWorkspace.shared.icon(for: .folder)
-    let thumbnails = ["Photo.png", "Report.pdf", "Notes.txt", "Assets"].map { name -> NSImage in
-        let url = samples.appendingPathComponent(name)
-        return NSImage(contentsOf: url).flatMap { name.hasSuffix(".png") ? $0 : nil } ?? NSWorkspace.shared.icon(forFile: url.path)
-    }
+    let thumbnails = dragThumbnails(samples: samples)
 
     // 配置（左上原点）
     let width = 640, height = 380
@@ -285,7 +345,7 @@ func compose(frames framesDirectory: URL, samples: URL, output: URL) throws {
         }
     }
 
-    let gifURL = output.appendingPathComponent("demo.gif")
+    let gifURL = output.appendingPathComponent("demo\(suffix).gif")
     let destination = CGImageDestinationCreateWithURL(gifURL as CFURL, UTType.gif.identifier as CFString, frames.count, nil)!
     CGImageDestinationSetProperties(destination, [
         kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFLoopCount: 0],
@@ -319,7 +379,7 @@ func compose(frames framesDirectory: URL, samples: URL, output: URL) throws {
             drawShelf(image, center: center, alpha: 1)
         }
     }
-    let screenshotsURL = output.appendingPathComponent("screenshots.png")
+    let screenshotsURL = output.appendingPathComponent("screenshots\(suffix).png")
     try writePNG(screenshots, to: screenshotsURL)
     print("✓ \(screenshotsURL.path)")
 }
@@ -327,13 +387,21 @@ func compose(frames framesDirectory: URL, samples: URL, output: URL) throws {
 switch arguments.dropFirst().first {
 case "samples" where arguments.count == 3:
     try makeSamples(in: URL(fileURLWithPath: arguments[2]))
-case "compose" where arguments.count == 5:
+case "compose" where arguments.count == 5 || arguments.count == 6:
     try compose(
         frames: URL(fileURLWithPath: arguments[2]),
         samples: URL(fileURLWithPath: arguments[3]),
-        output: URL(fileURLWithPath: arguments[4])
+        output: URL(fileURLWithPath: arguments[4]),
+        suffix: arguments.count == 6 ? arguments[5] : ""
+    )
+case "social" where arguments.count == 6:
+    try makeSocialPreview(
+        frames: URL(fileURLWithPath: arguments[2]),
+        samples: URL(fileURLWithPath: arguments[3]),
+        icon: URL(fileURLWithPath: arguments[4]),
+        output: URL(fileURLWithPath: arguments[5])
     )
 default:
-    print("使い方: swift scripts/make-demo.swift samples <dir> | compose <frames> <samples> <out>")
+    print("使い方: swift scripts/make-demo.swift samples <dir> | compose <frames> <samples> <out> [<suffix>] | social <frames> <samples> <icon> <out>")
     exit(1)
 }

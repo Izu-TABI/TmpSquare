@@ -74,7 +74,7 @@ struct EmptyDropZone: View {
         VStack(spacing: 10) {
             Image(systemName: isTargeted ? "tray.and.arrow.down.fill" : "tray.and.arrow.down")
                 .font(.system(size: 34, weight: .light))
-            Text(isTargeted ? "ドロップして追加" : "ここにドロップ")
+            Text(isTargeted ? L("ドロップして追加") : L("ここにドロップ"))
                 .font(.system(size: 12, weight: .medium))
         }
         .foregroundStyle(isTargeted ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.secondary))

@@ -7,7 +7,7 @@ enum Archiver {
 
         var errorDescription: String? {
             switch self {
-            case .dittoFailed(let status): "ZIP の作成に失敗しました（ditto 終了コード \(status)）"
+            case .dittoFailed(let status): Localization.zipFailed(status: status)
             }
         }
     }
@@ -34,7 +34,7 @@ enum Archiver {
         for url in urls {
             try fileManager.copyItem(at: url, to: uniqueURL(for: url.lastPathComponent, in: staging))
         }
-        let zipURL = directory.appendingPathComponent("アーカイブ.zip")
+        let zipURL = directory.appendingPathComponent(L("アーカイブ") + ".zip")
         try ditto(["-c", "-k", "--sequesterRsrc", staging.path, zipURL.path])
         try? fileManager.removeItem(at: staging)
         return zipURL

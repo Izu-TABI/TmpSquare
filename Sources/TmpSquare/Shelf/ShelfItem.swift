@@ -39,7 +39,7 @@ final class ShelfItem: ObservableObject, Identifiable {
         payload = .text(text)
         let firstLine = text.split(whereSeparator: \.isNewline).first.map(String.init) ?? text
         displayName = firstLine.trimmingCharacters(in: .whitespaces)
-        detail = "テキスト・\(text.count) 文字"
+        detail = Localization.textDetail(characters: text.count)
         thumbnail = NSWorkspace.shared.icon(for: .plainText)
     }
 

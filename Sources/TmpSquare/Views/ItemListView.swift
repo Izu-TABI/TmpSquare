@@ -91,7 +91,7 @@ struct ItemRow: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.trailing, 8)
-                .help("シェルフから外す")
+                .help(L("シェルフから外す"))
             }
         }
     }

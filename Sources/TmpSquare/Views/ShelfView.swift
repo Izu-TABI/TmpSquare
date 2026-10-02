@@ -88,18 +88,18 @@ struct ShelfHeader: View {
                 .allowsHitTesting(false)
 
             HStack(spacing: 6) {
-                HeaderButton(systemImage: "xmark", help: "シェルフを閉じる（esc）") {
+                HeaderButton(systemImage: "xmark", help: L("シェルフを閉じる（esc）")) {
                     model.requestClose()
                 }
                 Spacer()
                 if !model.items.isEmpty {
                     HeaderButton(
                         systemImage: model.isExpanded ? "square.stack.3d.up" : "list.bullet",
-                        help: model.isExpanded ? "重ねて表示" : "一覧で表示"
+                        help: model.isExpanded ? L("重ねて表示") : L("一覧で表示")
                     ) {
                         model.isExpanded.toggle()
                     }
-                    HeaderButton(systemImage: "ellipsis", help: "アクション") {
+                    HeaderButton(systemImage: "ellipsis", help: L("アクション")) {
                         ShelfMenu.make(for: model.items, in: model)
                             .popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
                     }
@@ -112,6 +112,6 @@ struct ShelfHeader: View {
     }
 
     private var title: String {
-        model.items.isEmpty ? "シェルフ" : "\(model.items.count) 項目"
+        model.items.isEmpty ? L("シェルフ") : Localization.itemCount(model.items.count)
     }
 }

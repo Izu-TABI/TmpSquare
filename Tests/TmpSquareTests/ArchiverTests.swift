@@ -17,7 +17,7 @@ struct ArchiverTests {
         let zip = try await Archiver.zip(files)
         defer { try? FileManager.default.removeItem(at: zip.deletingLastPathComponent()) }
 
-        #expect(zip.lastPathComponent == "アーカイブ.zip")
+        #expect(zip.lastPathComponent == L("アーカイブ") + ".zip")
         // 同名ファイルは Finder と同じく「名前 2」にして両方残す
         #expect(try extract(zip) == ["a.txt", "same 2.txt", "same.txt"])
     }

@@ -6,10 +6,12 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let shelves: ShelfManager
     private let onSettingsChanged: () -> Void
+    private let onShowGuide: () -> Void
 
-    init(shelves: ShelfManager, onSettingsChanged: @escaping () -> Void) {
+    init(shelves: ShelfManager, onSettingsChanged: @escaping () -> Void, onShowGuide: @escaping () -> Void) {
         self.shelves = shelves
         self.onSettingsChanged = onSettingsChanged
+        self.onShowGuide = onShowGuide
         super.init()
 
         statusItem.button?.image = StatusIcon.make()
@@ -25,14 +27,14 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         menu.removeAllItems()
         let settings = Settings.shared
 
-        let newShelf = ClosureMenuItem("新しいシェルフ", systemImage: "plus.rectangle.on.rectangle") { [shelves] in
+        let newShelf = ClosureMenuItem(L("新しいシェルフ"), systemImage: "plus.rectangle.on.rectangle") { [shelves] in
             shelves.openShelf(at: NSEvent.mouseLocation)
         }
         newShelf.keyEquivalent = " "
         newShelf.keyEquivalentModifierMask = [.option, .shift]
         menu.addItem(newShelf)
 
-        let closeAll = ClosureMenuItem("すべてのシェルフを閉じる", systemImage: "xmark.rectangle") { [shelves] in
+        let closeAll = ClosureMenuItem(L("すべてのシェルフを閉じる"), systemImage: "xmark.rectangle") { [shelves] in
             shelves.closeAll()
         }
         closeAll.isEnabled = shelves.hasOpenShelves
@@ -40,19 +42,19 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
 
         menu.addItem(.separator())
 
-        let shake = ClosureMenuItem("ドラッグ中のシェイクで開く") { [weak self] in
+        let shake = ClosureMenuItem(L("ドラッグ中のシェイクで開く")) { [weak self] in
             settings.shakeToOpen.toggle()
             self?.onSettingsChanged()
         }
         shake.state = settings.shakeToOpen ? .on : .off
         menu.addItem(shake)
 
-        let sensitivity = NSMenuItem(title: "シェイクの感度", action: nil, keyEquivalent: "")
+        let sensitivity = NSMenuItem(title: L("シェイクの感度"), action: nil, keyEquivalent: "")
         sensitivity.submenu = makeSensitivityMenu()
         sensitivity.isEnabled = settings.shakeToOpen
         menu.addItem(sensitivity)
 
-        let removeAfterDrag = ClosureMenuItem("ドラッグアウトした項目をシェルフから外す") {
+        let removeAfterDrag = ClosureMenuItem(L("ドラッグアウトした項目をシェルフから外す")) {
             settings.removeAfterDragOut.toggle()
         }
         removeAfterDrag.state = settings.removeAfterDragOut ? .on : .off
@@ -60,7 +62,7 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
 
         menu.addItem(.separator())
 
-        let login = ClosureMenuItem("ログイン時に起動") {
+        let login = ClosureMenuItem(L("ログイン時に起動")) {
             LoginItem.setEnabled(!LoginItem.isEnabled)
         }
         login.state = LoginItem.isEnabled ? .on : .off
@@ -68,11 +70,14 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
 
         menu.addItem(.separator())
 
-        menu.addItem(ClosureMenuItem("TmpSquare について") {
+        menu.addItem(ClosureMenuItem(L("使い方"), systemImage: "questionmark.circle") { [weak self] in
+            self?.onShowGuide()
+        })
+        menu.addItem(ClosureMenuItem(L("TmpSquare について")) {
             NSApp.activate()
             NSApp.orderFrontStandardAboutPanel(nil)
         })
-        let quit = NSMenuItem(title: "TmpSquare を終了", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        let quit = NSMenuItem(title: L("TmpSquare を終了"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         quit.target = NSApp
         menu.addItem(quit)
     }

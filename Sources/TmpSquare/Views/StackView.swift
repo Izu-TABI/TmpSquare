@@ -60,7 +60,7 @@ struct StackView: View {
                         .font(.system(size: 12, weight: .medium))
                         .lineLimit(1)
                         .truncationMode(.middle)
-                    Text(model.items.count > 1 ? "ほか \(model.items.count - 1) 項目" : (first.detail ?? ""))
+                    Text(model.items.count > 1 ? Localization.andMore(model.items.count - 1) : (first.detail ?? ""))
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)

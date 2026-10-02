@@ -5,7 +5,7 @@
 #   ./scripts/release.sh
 #
 # Resources/Info.plist の CFBundleShortVersionString を v<バージョン> のタグにして、
-# ユニバーサル版の TmpSquare.zip を添付したリリースを作る。
+# ユニバーサル版の TmpSquare.zip を添付したリリースを作り、Homebrew の tap も更新する。
 # 新しいバージョンを出すときは、先に Info.plist のバージョンを上げてコミット・push しておく。
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -42,3 +42,6 @@ gh release create "$TAG" "$ZIP" \
   --title "$APP_NAME $VERSION" \
   --notes-file scripts/release-notes.md \
   --generate-notes
+
+echo "▸ Homebrew の tap を更新"
+./scripts/update-tap.sh
